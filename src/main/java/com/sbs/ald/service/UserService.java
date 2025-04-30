@@ -1,11 +1,11 @@
 package com.sbs.ald.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,27 +82,35 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public Optional<String> signin(LoginDto loginDto) {
+    public Optional<String> signin(String username, String password) {
         // Inicijalizacija tokena
         Optional<String> token = Optional.empty();
-
+     
         // Provera da li korisnik postoji
-        Optional<User> user = userRepository.findByUsername(loginDto.getUsername());
+        Optional<User> user = userRepository.findByUsername(username);
         if (!user.isPresent()) {
-            throw new UsernameNotFoundException("User not found with username: " + loginDto.getUsername());
+            throw new UsernameNotFoundException("User not found with username: " + username);
+        }
+        if (user.get().getRoles() == null || user.get().getRoles().isEmpty()) {
+            throw new IllegalStateException("User has no roles assigned");
         }
 
         try {
             // Autentifikacija korisnika
+        	System.out.println("Username: " + username);
+        	System.out.println("Password: " + password);
+
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    loginDto.getUsername(),
-                    loginDto.getPassword()
+                    username,
+                    password
                 )
             );
 
             // Generisanje JWT tokena
-            token = Optional.of(jwtUtil.generateToken(user.get()));
+//            token = Optional.of(jwtUtil.generateToken(user.get()));
+            token = Optional.of(jwtUtil.createToken(username, new ArrayList<>(user.get().getRoles())));
+
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password", e);
         }

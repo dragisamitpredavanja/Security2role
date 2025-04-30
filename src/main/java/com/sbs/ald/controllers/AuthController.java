@@ -41,7 +41,7 @@ public class AuthController {
 	public String login(@RequestBody LoginDto loginDto) {
 		try {
 			
-			String s = userService.signin(loginDto)
+			String s = userService.signin(loginDto.getUsername(), loginDto.getPassword())
 					.orElseThrow(() -> new HttpServerErrorException(HttpStatus.FORBIDDEN, "Login Failed"));			
 			return s;
 		} catch (Exception e) {
