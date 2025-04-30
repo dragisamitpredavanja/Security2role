@@ -3,6 +3,8 @@ package com.sbs.ald.dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +16,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
-
 
 @Entity
 @Table(name = "users")
@@ -35,28 +36,24 @@ public class User {
 	@Column()
 	String email;
 
-	 @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-	    @JoinTable(
-	        name = "users_roles",
-	        joinColumns = @JoinColumn(name = "user_id"),
-	        inverseJoinColumns = @JoinColumn(name = "role_id")
-	    )
-	    private Set<Role> roles = new HashSet<>();
+	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+	@JsonManagedReference
+	private Set<Role> roles = new HashSet<>();
 
 	public User() {
 	}
 
 	// Parametrizovani konstruktor
-	public User(Long id, String username, String password, String name, String address, String email, Set<Role> roles) {
-	    this.id = id;
-	    this.username = username;
-	    this.password = password;
-	    this.name = name;
-	    this.address = address;
-	    this.email = email;
-	    this.roles = roles;
+	public User(String username, String password, String name, String address, String email, Set<Role> roles) {
+//	    this.id = id;
+		this.username = username;
+		this.password = password;
+		this.name = name;
+		this.address = address;
+		this.email = email;
+		this.roles = roles;
 	}
-
 
 	// Getter i setter metode
 	public Long getId() {
@@ -115,8 +112,4 @@ public class User {
 		this.roles = roles;
 	}
 
-	
-
-	
-	
 }

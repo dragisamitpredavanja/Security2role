@@ -1,34 +1,76 @@
 package com.sbs.ald.service;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.sbs.ald.dto.LoginDto;
+import com.sbs.ald.dto.Role;
 import com.sbs.ald.dto.User;
 import com.sbs.ald.repository.RoleRepository;
 import com.sbs.ald.repository.UserRepository;
 import com.sbs.ald.util.JwtUtil;
+
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private RoleService roleService;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtUtil jwtUtil;
 
+    public Optional<User> createUser2(LoginDto loginDto) {
+        // Proverite da li korisnik sa datim korisničkim imenom već postoji
+        if (userRepository.findByUsername(loginDto.getUsername()).isPresent()) {
+            return Optional.empty(); // Vratite prazan Optional ako korisnik već postoji
+        }
+
+        // Kreiranje skupa uloga
+        Set<Role> roles = new HashSet<>();
+        for (Role role : loginDto.getRoles()) {
+            Optional<Role> roleOptional = roleService.findByName(role.getName());
+            if (roleOptional.isPresent()) {
+                roles.add(roleOptional.get());
+            } else {
+                return Optional.empty(); // Vratite prazan Optional ako neka od uloga nije pronađena
+            }
+        }
+
+        // Kreirajte novog korisnika sa svim informacijama
+        User newUser = new User(
+            loginDto.getUsername(),
+            passwordEncoder.encode(loginDto.getPassword()),
+            loginDto.getName(),
+            loginDto.getAddress(),
+            loginDto.getEmail(),
+            roles // Dodajte uloge korisniku
+        );
+
+        // Sačuvajte korisnika u bazi podataka
+        User savedUser = userRepository.save(newUser);
+
+        // Vratite sačuvanog korisnika unutar Optional
+        return Optional.of(savedUser);
+    }
 
     // Provera da li korisnik već postoji
     public boolean existsByUsername(String username) {
@@ -67,5 +109,6 @@ public class UserService {
 
         return token;
     }
+    
 
 }

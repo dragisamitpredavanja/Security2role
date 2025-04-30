@@ -5,15 +5,18 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
 
+import com.sbs.ald.dto.LoginDto;
 import com.sbs.ald.dto.Role;
 import com.sbs.ald.dto.User;
-import com.sbs.ald.repository.RoleRepository;
 import com.sbs.ald.service.RoleService;
 import com.sbs.ald.service.UserService;
 
@@ -30,7 +33,7 @@ public class UserController {
 //    private RoleRepository roleRepository;
 
     // Endpoint za kreiranje korisnika sa rolama 'admin' ili 'user'
-    @PostMapping("/createUser")
+    @PostMapping("/createUser1")
     public ResponseEntity<String> createUserWithRoles(@RequestBody User user) {
         // Provera da li korisnik već postoji
         if (userService.existsByUsername(user.getUsername())) {
@@ -56,5 +59,15 @@ public class UserController {
 
         return ResponseEntity.ok("User created successfully with roles: " + roles);
     }
+    @PostMapping("/createUser")
+    @CrossOrigin
+	public User createUser(@RequestBody LoginDto loginDto) {
+
+		return userService.createUser2(loginDto)
+				.orElseThrow(() -> new HttpServerErrorException(HttpStatus.BAD_REQUEST, "User already exists"));
+	}
+
+
+
 
 }

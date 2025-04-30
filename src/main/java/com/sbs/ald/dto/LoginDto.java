@@ -1,5 +1,8 @@
 package com.sbs.ald.dto;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -16,17 +19,14 @@ public class LoginDto {
     
     private String email;
     
-    private Boolean admin;
+    private Set<Role> roles = new HashSet<>();
     
    
 
     /**
      * Default constructor
      */
-    protected LoginDto() {
-    	admin = false;
-    
-    }
+   
 
     /**
      * Partial constructor
@@ -37,17 +37,24 @@ public class LoginDto {
         this.username = username;
         this.password = password;
     }
-    /**
+    public LoginDto() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	/**
      * Full constructor
      * @param username
      * @param password
      */
-    public LoginDto(String username, String password, String name, String address, String email) {
-       this(username, password);
-       this.name = name;
-       this.address = address;
-       this.email = email;
-    }
+    public LoginDto( String username, String password, String name, String address, String email, Set<Role> roles) {
+	    
+	    this.username = username;
+	    this.password = password;
+	    this.name = name;
+	    this.address = address;
+	    this.email = email;
+	    this.roles = roles;
+	}
 
 
     public String getUsername() {
@@ -89,14 +96,14 @@ public class LoginDto {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
-	public Boolean getAdmin() {
-		return admin;
+	public Set<Role> getRoles() {
+		return roles;
+	}
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
 
-	public void setAdmin(Boolean admin) {
-		this.admin = admin;
-	}
+	
 
 	
 
