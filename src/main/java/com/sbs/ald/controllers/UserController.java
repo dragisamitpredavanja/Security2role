@@ -44,7 +44,7 @@ public class UserController {
             if (roleOptional.isPresent()) {
                 roles.add(roleOptional.get());
             } else {
-                return ResponseEntity.badRequest().body("Invalid role: " + role.getName());
+                return ResponseEntity.badRequest().body("Invalid role= " + role.getName());
             }
         }
 
