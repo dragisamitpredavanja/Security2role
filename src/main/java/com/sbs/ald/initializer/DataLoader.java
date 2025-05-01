@@ -17,6 +17,9 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+    	if (!roleService.findByName("ROLE_SUPER_ADMIN").isPresent()) {
+            roleService.save(new Role("ROLE_SUPER_ADMIN"));
+        }
         if (!roleService.findByName("ROLE_ADMIN").isPresent()) {
             roleService.save(new Role("ROLE_ADMIN"));
         }

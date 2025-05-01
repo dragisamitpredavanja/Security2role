@@ -2,10 +2,12 @@ package com.sbs.ald.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -117,6 +119,11 @@ public class UserService {
 
         return token;
     }
+
+public List<User> getAll() {
+		
+		return userRepository.findAll(Sort.by("username"));
+	}
     
 
 }

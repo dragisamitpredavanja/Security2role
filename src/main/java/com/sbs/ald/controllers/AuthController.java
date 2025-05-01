@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.sbs.ald.dto.LoginDto;
+import com.sbs.ald.dto.LoginRequest;
 import com.sbs.ald.dto.LoginResponse;
 import com.sbs.ald.dto.User;
 import com.sbs.ald.service.UserService;
@@ -38,7 +39,7 @@ public class AuthController {
           
     @CrossOrigin
 	@PostMapping("/login")
-	public String login(@RequestBody LoginDto loginDto) {
+	public String login(@RequestBody LoginRequest loginDto) {
 		try {
 			
 			String s = userService.signin(loginDto.getUsername(), loginDto.getPassword())
