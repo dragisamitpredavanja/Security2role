@@ -58,6 +58,22 @@ public class JwtUtil {
 		
 		return s;
 	}
+    
+    //ovaj deo za refresh token
+    
+    public String generateToken(String username, long expirationMs) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(SignatureAlgorithm.HS512, secret)
+                .compact();
+    }
+    public String generateRefreshToken(String username) {
+        return generateToken(username, 1000L * 60 * 60 * 24 * 7); // 7 dana
+    }
+    //ovaj deo za refresh token
+    
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }

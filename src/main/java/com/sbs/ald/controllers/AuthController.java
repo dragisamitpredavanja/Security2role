@@ -1,9 +1,7 @@
 package com.sbs.ald.controllers;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,10 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
-import com.sbs.ald.dto.LoginDto;
 import com.sbs.ald.dto.LoginRequest;
-import com.sbs.ald.dto.LoginResponse;
-import com.sbs.ald.dto.User;
+import com.sbs.ald.dto.RefreshRequest;
+import com.sbs.ald.dto.TokenResponse;
 import com.sbs.ald.service.UserService;
 import com.sbs.ald.util.JwtUtil;
 
@@ -50,4 +47,14 @@ public class AuthController {
 			throw new HttpServerErrorException(HttpStatus.FORBIDDEN, "Login Failed");
 		}
 	}
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshRequest request) {
+        try {
+            String username = jwtUtil.extractUsername(request.getRefreshToken());
+            String newAccessToken = jwtUtil.generateRefreshToken(username);
+            return ResponseEntity.ok(new TokenResponse(newAccessToken, request.getRefreshToken()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
+        }
+    }
 }

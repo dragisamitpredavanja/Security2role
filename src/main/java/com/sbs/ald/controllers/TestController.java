@@ -9,11 +9,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class TestController {
-	 @GetMapping("/test")
-	    @PreAuthorize("hasRole('ADMIN')")
-	    @CrossOrigin
-	    public String test() {
-	        return "radi test";
-	    }
+	@GetMapping("/test")
+	@PreAuthorize("hasRole('ADMIN')")
+	@CrossOrigin
+	public String test() {
+		return "radi test";
+	}
 
+	@GetMapping("/test2")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+	@CrossOrigin
+	public String test2() {
+		return "radi test2";
+	}
 }
