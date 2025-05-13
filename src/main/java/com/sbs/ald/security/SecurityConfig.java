@@ -3,7 +3,6 @@ package com.sbs.ald.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -13,42 +12,53 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.sbs.ald.filter.JwtAuthenticationFilter;
 
+
 @Configuration
-@EnableMethodSecurity //omogucava @PreAuthorize("hasRole('ADMIN')")
-public class SecurityConfig {
-	@Autowired
-	private JwtAuthenticationFilter jwtAuthenticationFilter;
+@EnableMethodSecurity
+public class SecurityConfig implements WebMvcConfigurer {  // implementira WebMvcConfigurer
 
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Override  // Obavezno, kako bi Spring prepoznao ovu metodu
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-        .csrf().disable() // Potpuno isključivanje CSRF-a
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless autentifikacija
-        
+//            .cors()  // CORS podrška
+//        .and()
+            .csrf().disable()
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless autentifikacija
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/register",
                     "/api/auth/*",
-                    "/api/users/*",
+                    "/api/osobe/**",
+                    "/api/users/**",
                     "/user/login",
                     "/static/**",
                     "/h2/**"
                 ).permitAll()
-//                .requestMatchers("/api/**").hasRole("admin")
+                .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**").permitAll()
                 .anyRequest().authenticated()
             );
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
-       
-
     }
-//za proveri username i passworda u bazi
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -58,6 +68,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-   
-
 }

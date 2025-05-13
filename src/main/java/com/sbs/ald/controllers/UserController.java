@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.sbs.ald.dto.LoginDto;
+import com.sbs.ald.dto.OsobaDTO;
 import com.sbs.ald.dto.Role;
 import com.sbs.ald.dto.User;
+import com.sbs.ald.entitety.Osoba;
+import com.sbs.ald.repository.OsobaRepository;
 import com.sbs.ald.service.RoleService;
 import com.sbs.ald.service.UserService;
 
@@ -29,7 +32,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
+//    private final OsobaRepository osobaRepository;
+//    public UserController(OsobaRepository osobaRepository) {
+//        this.osobaRepository = osobaRepository;
+//    }
     @Autowired
     private RoleService roleService;
 //    @Autowired
@@ -75,6 +81,20 @@ public class UserController {
     public List<User> getAllUsers() {
         return userService.getAll();
     }
+//    @PostMapping("/createOsoba")
+//    @CrossOrigin
+//    public Osoba createOsoba(@RequestBody OsobaDTO dto) {
+//        Osoba osoba = new Osoba();
+//        osoba.setIme(dto.ime);
+//        osoba.setPrezime(dto.prezime);
+//        osoba.setGrad(dto.grad);
+//        osoba.setSlikaUrl(dto.slikaUrl);
+//        osoba.setLepota(dto.lepota);
+//        osoba.setPamet(dto.pamet);
+//        osoba.setVisina(dto.visina);
+//        osoba.setBrojLajkova(0);
+//        return osobaRepository.save(osoba);
+//    }
    
 
 
