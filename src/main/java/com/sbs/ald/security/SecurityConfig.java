@@ -37,8 +37,8 @@ public class SecurityConfig implements WebMvcConfigurer {  // implementira WebMv
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-//            .cors()  // CORS podrška
-//        .and()
+            .cors()  // CORS podrška
+        .and()
             .csrf().disable()
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless autentifikacija
@@ -52,7 +52,7 @@ public class SecurityConfig implements WebMvcConfigurer {  // implementira WebMv
                     "/static/**",
                     "/h2/**"
                 ).permitAll()
-                .requestMatchers("/", "/index.html", "/static/**", "/js/**", "/css/**").permitAll()
+                .requestMatchers("/", "/index.html", "/manifest.json", "/static/**", "/js/**", "/css/**").permitAll()
                 .anyRequest().authenticated()
             );
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

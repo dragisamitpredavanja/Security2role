@@ -3,15 +3,19 @@ package com.sbs.ald.controllers;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,10 +25,13 @@ import com.sbs.ald.dto.OsobaDtoSlikaBaza;
 import com.sbs.ald.entitety.Osoba;
 import com.sbs.ald.repository.OsobaRepository;
 import com.sbs.ald.service.OsobaService;
+
+import io.jsonwebtoken.Jwt;
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api/osobe")
 public class OsobaController {
+	
 
 	 private final OsobaRepository osobaRepository;
 	 @Autowired
@@ -33,79 +40,7 @@ public class OsobaController {
 	        this.osobaRepository = osobaRepository;
 	    }
 	    private final String UPLOAD_DIR = "C:/radni/MLD/Security2role/uploads/";
-//	    @PostMapping("/createOsoba")
-//	    @CrossOrigin
-//	    public Osoba createOsoba(@RequestBody Osoba osoba) {
-//	        return osobaRepository.save(osoba);
-//	    }
 
-
-//	        private final String UPLOAD_DIR = "uploads/"; // folder se nalazi u root-u projekta
-//	    private final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads/";
-//
-//
-//	        @PostMapping("/createOsoba")
-//	        @CrossOrigin
-//	        public ResponseEntity<Osoba> createOsoba(
-//	                @RequestParam String ime,
-//	                @RequestParam String prezime,
-//	                @RequestParam String grad,
-//	                @RequestParam int lepota,
-//	                @RequestParam int pamet,
-//	                @RequestParam int visina,
-//	                @RequestParam("slika") MultipartFile slikaFile
-//	        ) {
-//	            try {
-//	                // Sačuvaj fajl
-//	                String fileName = UUID.randomUUID() + "_" + slikaFile.getOriginalFilename();
-//	                Path filePath = Paths.get(UPLOAD_DIR + fileName);
-//	                Files.createDirectories(filePath.getParent());
-//	                slikaFile.transferTo(filePath.toFile());
-//
-//	                // Napravi osobu i setuj putanju slike
-//	                Osoba osoba = new Osoba();
-//	                osoba.setIme(ime);
-//	                osoba.setPrezime(prezime);
-//	                osoba.setGrad(grad);
-//	                osoba.setLepota(lepota);
-//	                osoba.setPamet(pamet);
-//	                osoba.setVisina(visina);
-//	                osoba.setBrojLajkova(0);
-//	                osoba.setSlikaUrl("/uploads/" + fileName); // Ovo frontend koristi za prikaz
-//
-//	                // Sačuvaj u bazu
-//	                Osoba saved = osobaService.saveOsobe(osoba);
-//	                return ResponseEntity.ok(saved);
-//
-//	            } catch (IOException e) {
-//	                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//	            }
-//	        }
-//	   
-//	    @PostMapping("/createOsoba")
-//	    public ResponseEntity<Osoba> createOsoba(
-//	            @RequestParam String ime,
-//	            @RequestParam String prezime,
-//	            @RequestParam String grad,
-//	            @RequestParam int lepota,
-//	            @RequestParam int pamet,
-//	            @RequestParam int visina,
-//	            @RequestParam("slika") MultipartFile slika,
-//	            @RequestParam int brojLajkova
-//	    ) throws IOException {
-//	        Osoba osoba = new Osoba();
-//	        osoba.setIme(ime);
-//	        osoba.setPrezime(prezime);
-//	        osoba.setGrad(grad);
-//	        osoba.setLepota(lepota);
-//	        osoba.setPamet(pamet);
-//	        osoba.setVisina(visina);
-//	        osoba.setBrojLajkova(brojLajkova);
-//	        osoba.setSlika(slika.getBytes()); // slika kao byte[]
-//
-//	        Osoba saved = osobaService.saveOsobe(osoba);
-//	        return ResponseEntity.ok(saved);
-//	    }
 	    @CrossOrigin
 	    @PostMapping("/createOsoba")
 	    public ResponseEntity<Osoba> createOsoba(
@@ -157,6 +92,8 @@ public class OsobaController {
 
 			return ResponseEntity.ok(sacuvana);
 	    }
+	   
+
 	    @CrossOrigin
 	    @GetMapping("/getSlika/{id}")
 	    public ResponseEntity<String> getSlika(@PathVariable Long id) {
@@ -178,11 +115,20 @@ public class OsobaController {
 	    }
 	    @CrossOrigin(origins = "http://localhost:3000")
 	    @GetMapping("/{id}")
-	    public ResponseEntity<Osoba> getOsoba(@PathVariable Long id) {
+	  
+	    public ResponseEntity<Osoba> getOsoba(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+//	        String username = jwt.getClaimAsString("sub");
 	        Osoba osoba = osobaRepository.findById(id)
 	            .orElseThrow(() -> new RuntimeException("Osoba nije pronađena"));
 	        return ResponseEntity.ok(osoba);
 	    }
+//	    @CrossOrigin(origins = "http://localhost:3000")
+//	    @GetMapping("/{id}")
+//	    public ResponseEntity<Osoba> getOsoba(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+//	        String username = jwt.getClaimAsString("preferred_username");
+//	        // koristi username da vidiš da li korisnik ima pravo na osobu
+//	        return ResponseEntity.ok(osobaRepository.findById(id));
+//	    }
 	    @DeleteMapping("/{id}")
 	    public ResponseEntity<String> deleteOsoba(@PathVariable Long id) {
 	        boolean isDeleted = osobaService.deleteOsobaById(id);
@@ -210,5 +156,32 @@ public class OsobaController {
     public List<Osoba> getAllOsobe() {
         return osobaRepository.findAll();
 }
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Osoba> toggleLike(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+        Optional<Osoba> osobaOpt = osobaRepository.findById(id);
+        if (osobaOpt.isEmpty()) return ResponseEntity.notFound().build();
 
+        Osoba osoba = osobaOpt.get();
+        Boolean liked = body.get("liked");
+
+        if (liked != null) {
+            if (liked) {
+                osoba.setBrojLajkova(osoba.getBrojLajkova() + 1);
+            } else {
+                osoba.setBrojLajkova(Math.max(0, osoba.getBrojLajkova() - 1)); // da ne ide ispod 0
+            }
+            osobaRepository.save(osoba);
+        }
+
+        return ResponseEntity.ok(osoba);
+    }
+//  @CrossOrigin(origins = "http://localhost:3000")
+//  @PostMapping("/{osobaId}/like")
+//  public Osoba likeOsobu(
+//      @PathVariable Long osobaId,
+//      @RequestParam Long userId
+//  ) {
+//      return likeService.toggleLike(userId, osobaId);
+//  }
 }

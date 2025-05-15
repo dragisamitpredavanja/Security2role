@@ -4,13 +4,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.sbs.ald.dto.User;
 import com.sbs.ald.entitety.Osoba;
 
 @Repository
 public interface OsobaRepository extends JpaRepository<Osoba, Long> {
+	@Query("SELECT o FROM Osoba o ORDER BY o.brojLajkova DESC")
 	 List<Osoba> findAll();
     List<Osoba> findByGrad(String grad);
 

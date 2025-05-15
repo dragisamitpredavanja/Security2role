@@ -29,6 +29,8 @@ public class JwtUtil {
     public String generateToken(User user) {
         return Jwts.builder()
             .setSubject(user.getUsername())
+            .claim("userId", user.getId())          // dodaj userId
+            .claim("email", user.getEmail()) 
             .claim("roles", user.getRoles().stream()
                 .map(Role::getName)
                 .collect(Collectors.toList()))
@@ -76,6 +78,11 @@ public class JwtUtil {
     
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+ // Ekstraktuj bilo koji claim
+    public String extractClaim(String token, String claimKey) {
+        Claims claims = extractAllClaims(token);
+        return claims.get(claimKey, String.class);
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {

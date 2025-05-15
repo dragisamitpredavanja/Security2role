@@ -81,20 +81,7 @@ public class UserController {
     public List<User> getAllUsers() {
         return userService.getAll();
     }
-//    @PostMapping("/createOsoba")
-//    @CrossOrigin
-//    public Osoba createOsoba(@RequestBody OsobaDTO dto) {
-//        Osoba osoba = new Osoba();
-//        osoba.setIme(dto.ime);
-//        osoba.setPrezime(dto.prezime);
-//        osoba.setGrad(dto.grad);
-//        osoba.setSlikaUrl(dto.slikaUrl);
-//        osoba.setLepota(dto.lepota);
-//        osoba.setPamet(dto.pamet);
-//        osoba.setVisina(dto.visina);
-//        osoba.setBrojLajkova(0);
-//        return osobaRepository.save(osoba);
-//    }
+
    
 
 

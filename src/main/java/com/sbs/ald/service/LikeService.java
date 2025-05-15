@@ -25,9 +25,48 @@ public class LikeService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate; // WebSocket slanje
 
-    public void toggleLike(Long userId, Long osobaId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Osoba osoba = osobaRepository.findById(osobaId).orElseThrow(() -> new RuntimeException("Osoba not found"));
+//    public void toggleLike(Long userId, Long osobaId) {
+//        User user = userRepository.findById(userId)
+//            .orElseThrow(() -> new RuntimeException("User not found"));
+//        Osoba osoba = osobaRepository.findById(osobaId)
+//            .orElseThrow(() -> new RuntimeException("Osoba not found"));
+//
+//        Optional<Like> existingLikeOpt = likeRepository.findByUserAndOsoba(user, osoba);
+//
+//        if (existingLikeOpt.isPresent()) {
+//            Like existingLike = existingLikeOpt.get();
+//            // Toggle
+//            boolean newLikedState = !existingLike.isLiked();
+//            existingLike.setLiked(newLikedState);
+//            likeRepository.save(existingLike);
+//
+//            // Update brojLajkova
+//            int likeCount = likeRepository.countByOsobaAndIsLikedTrue(osoba);
+//            osoba.setBrojLajkova(likeCount);
+//            osobaRepository.save(osoba);
+//        } else {
+//            // Novi like
+//            Like newLike = new Like();
+//            newLike.setUser(user);
+//            newLike.setOsoba(osoba);
+//            newLike.setLiked(true);
+//            likeRepository.save(newLike);
+//
+//            osoba.setBrojLajkova(osoba.getBrojLajkova() + 1);
+//            osobaRepository.save(osoba);
+//        }
+//
+//        // WebSocket update
+//        messagingTemplate.convertAndSend(
+//            "/topic/like-updates/" + osoba.getId(),
+//            osoba.getBrojLajkova()
+//        );
+//    }
+    public Osoba toggleLike(Long userId, Long osobaId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        Osoba osoba = osobaRepository.findById(osobaId)
+            .orElseThrow(() -> new RuntimeException("Osoba not found"));
 
         Like existingLike = likeRepository.findByUserAndOsoba(user, osoba);
 
@@ -45,15 +84,12 @@ public class LikeService {
 
         osobaRepository.save(osoba);
 
-        // WebSocket emitovanje ažuriranog broja lajkova
-        messagingTemplate.convertAndSend(
-            "/topic/like-updates/" + osoba.getId(),
-            osoba.getBrojLajkova()
-        );
+//        messagingTemplate.convertAndSend(
+//            "/topic/like-updates/" + osoba.getId(),
+//            osoba.getBrojLajkova()
+//        );
+
+        return osoba;
     }
 
-    public int getLikeCount(Long osobaId) {
-        Osoba osoba = osobaRepository.findById(osobaId).orElseThrow(() -> new RuntimeException("Osoba not found"));
-        return osoba.getBrojLajkova();
-    }
 }
