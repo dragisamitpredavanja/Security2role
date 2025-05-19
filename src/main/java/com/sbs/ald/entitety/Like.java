@@ -1,4 +1,5 @@
 package com.sbs.ald.entitety;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sbs.ald.dto.User;
 
 import jakarta.persistence.Entity;
@@ -22,6 +23,7 @@ public class Like {
 
     @ManyToOne
     @JoinColumn(name = "osoba_id")
+    @JsonIgnore
     private Osoba osoba;  // Osoba koja je lajkovana
 
     private boolean isLiked;  // True = lajkovano, False = skinut like

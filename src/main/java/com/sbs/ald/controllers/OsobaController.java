@@ -7,8 +7,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,10 +25,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.sbs.ald.dto.OsobaDtoSlikaBaza;
+import com.sbs.ald.dto.User;
+import com.sbs.ald.entitety.Like;
 import com.sbs.ald.entitety.Osoba;
+import com.sbs.ald.repository.LikeRepository;
 import com.sbs.ald.repository.OsobaRepository;
+import com.sbs.ald.repository.UserRepository;
 import com.sbs.ald.service.OsobaService;
 
 import io.jsonwebtoken.Jwt;
@@ -31,7 +41,13 @@ import io.jsonwebtoken.Jwt;
 @RestController
 @RequestMapping("/api/osobe")
 public class OsobaController {
-	
+	  @Autowired
+	    private SimpMessagingTemplate messagingTemplate;
+	@Autowired
+	private LikeRepository likeRepository;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	 private final OsobaRepository osobaRepository;
 	 @Autowired
@@ -89,13 +105,15 @@ public class OsobaController {
 
 			// 3. Čuvanje osobe u bazi
 			Osoba sacuvana = osobaRepository.save(osoba);
-
+			
 			return ResponseEntity.ok(sacuvana);
 	    }
 	   
 
 	    @CrossOrigin
 	    @GetMapping("/getSlika/{id}")
+//	    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+
 	    public ResponseEntity<String> getSlika(@PathVariable Long id) {
 	        Osoba osoba = osobaRepository.findById(id)
 	                .orElseThrow(() -> new RuntimeException("Osoba nije pronađena"));
@@ -156,32 +174,64 @@ public class OsobaController {
     public List<Osoba> getAllOsobe() {
         return osobaRepository.findAll();
 }
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/{id}/like")
-    public ResponseEntity<Osoba> toggleLike(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
-        Optional<Osoba> osobaOpt = osobaRepository.findById(id);
-        if (osobaOpt.isEmpty()) return ResponseEntity.notFound().build();
+    public ResponseEntity<Osoba> toggleLike(
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> body
+    ) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        Osoba osoba = osobaOpt.get();
+        Osoba osoba = osobaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Osoba not found"));
+        messagingTemplate.convertAndSend("/topic/likes", osoba);
         Boolean liked = body.get("liked");
+        if (liked == null) return ResponseEntity.badRequest().build();
 
-        if (liked != null) {
-            if (liked) {
-                osoba.setBrojLajkova(osoba.getBrojLajkova() + 1);
-            } else {
-                osoba.setBrojLajkova(Math.max(0, osoba.getBrojLajkova() - 1)); // da ne ide ispod 0
+        Optional<Like> existingLikeOpt = likeRepository.findByUserAndOsoba(user, osoba);
+
+        if (existingLikeOpt.isPresent()) {
+            Like existingLike = existingLikeOpt.get();
+            if (existingLike.isLiked() != liked) {
+                // Ažuriraj status lajka
+                existingLike.setLiked(liked);
+                likeRepository.save(existingLike);
+
+                // Ažuriraj broj lajkova
+                int adjustment = liked ? 1 : -1;
+                osoba.setBrojLajkova(Math.max(0, osoba.getBrojLajkova() + adjustment));
+                osobaRepository.save(osoba);
             }
+        } else if (liked) {
+            // Ako nije lajkovao ranije, i sad lajkuje
+            Like newLike = new Like();
+            newLike.setUser(user);
+            newLike.setOsoba(osoba);
+            newLike.setLiked(true);
+            likeRepository.save(newLike);
+
+            osoba.setBrojLajkova(osoba.getBrojLajkova() + 1);
             osobaRepository.save(osoba);
         }
-
+        // 🔴 Ova linija šalje ažuriranu osobu preko WebSocketa
+        messagingTemplate.convertAndSend("/topic/likes", osoba);
         return ResponseEntity.ok(osoba);
     }
-//  @CrossOrigin(origins = "http://localhost:3000")
-//  @PostMapping("/{osobaId}/like")
-//  public Osoba likeOsobu(
-//      @PathVariable Long osobaId,
-//      @RequestParam Long userId
-//  ) {
-//      return likeService.toggleLike(userId, osobaId);
-//  }
+    // DTO klasa za request telo
+    public static class LikeRequest {
+        private boolean liked;
+
+        public boolean isLiked() {
+            return liked;
+        }
+
+        public void setLiked(boolean liked) {
+            this.liked = liked;
+        }
+    }
+
 }

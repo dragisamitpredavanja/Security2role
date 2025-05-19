@@ -13,7 +13,7 @@ import com.sbs.ald.entitety.Osoba;
 public interface LikeRepository extends JpaRepository<Like, Long> {
     // Pronalaženje lajka na osnovu korisnika i osobe
 //    Like findByUserAndOsoba(User user, Osoba osoba);
-    Like findByUserAndOsoba(User user, Osoba osoba);
+	 Optional<Like> findByUserAndOsoba(User user, Osoba osoba);
     int countByOsobaAndIsLikedTrue(Osoba osoba);
 
 

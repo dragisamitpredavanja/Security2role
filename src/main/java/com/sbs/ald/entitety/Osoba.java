@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "osobe")
+
 public class Osoba {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +65,21 @@ public class Osoba {
 		this.komentari = komentari;
 		this.likes = likes;
 	}
-
+    public Osoba(Long id, String ime, String prezime, String grad,  int lepota, int pamet, int visina,
+			int brojLajkova, List<Komentar> komentari, List<Like> likes) {
+		super();
+		this.id = id;
+		this.ime = ime;
+		this.prezime = prezime;
+		this.grad = grad;
+	
+		this.lepota = lepota;
+		this.pamet = pamet;
+		this.visina = visina;
+		this.brojLajkova = brojLajkova;
+		this.komentari = komentari;
+		this.likes = likes;
+	}
 
 
 	// Getter i setter metode

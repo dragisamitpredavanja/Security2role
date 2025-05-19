@@ -20,10 +20,10 @@ public class LikeController {
     @Autowired
     private OsobaRepository osobaRepository;
 
-    @PostMapping("/toggle")
-    public void toggleLike(@RequestParam Long userId, @RequestParam Long osobaId) {
-        likeService.toggleLike(userId, osobaId);
-    }
+//    @PostMapping("/toggle")
+//    public void toggleLike(@RequestParam Long userId, @RequestParam Long osobaId) {
+//        likeService.toggleLike(userId, osobaId);
+//    }
 
     @GetMapping("/count/{osobaId}")
     public int getLikeCount(Long osobaId) {

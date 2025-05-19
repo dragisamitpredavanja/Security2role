@@ -111,7 +111,12 @@ public class UserService {
 
             // Generisanje JWT tokena
 //            token = Optional.of(jwtUtil.generateToken(user.get()));
-            token = Optional.of(jwtUtil.createToken(username, new ArrayList<>(user.get().getRoles())));
+            token = Optional.of(jwtUtil.createToken(
+            	    username,
+            	    user.get().getEmail(), // ovde dodaješ email
+            	    new ArrayList<>(user.get().getRoles()))
+            	);
+
 
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid username or password", e);

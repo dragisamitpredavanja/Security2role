@@ -40,10 +40,9 @@ public class JwtUtil {
             .compact();
     }
 
-    public String createToken(String username, List<Role> roles) {
+    public String createToken(String username, String email, List<Role> roles) {
 		Claims claims = Jwts.claims().setSubject(username);
-//		claims.put(ROLES_KEY, roles.stream().map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-//				.filter(Objects::nonNull).collect(Collectors.toList()));
+		claims.put("email", email); // dodaj email
 
 		claims.put(
 			    ROLES_KEY, 
