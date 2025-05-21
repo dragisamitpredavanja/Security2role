@@ -3,11 +3,11 @@ package com.sbs.ald.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,11 +40,16 @@ public class SecurityConfig implements WebMvcConfigurer {  // implementira WebMv
         http
             .cors()  // CORS podrška
         .and()
+        
             .csrf().disable()
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless autentifikacija
             .authorizeHttpRequests(auth -> auth
-            		 .requestMatchers(HttpMethod.POST, "/api/osobe/*/like").authenticated() // ✳️ prvo ovo
+            		.requestMatchers(
+            			    "/ws/**",
+            			    "/ws/info/**"
+            			).permitAll()
+
             		 .requestMatchers(
                     "/register",
                     "/api/auth/*",
@@ -54,13 +59,33 @@ public class SecurityConfig implements WebMvcConfigurer {  // implementira WebMv
                     "/static/**",
                     "/h2/**"
                 ).permitAll()
-                .requestMatchers("/", "/index.html", "/manifest.json", "/static/**", "/js/**", "/css/**").permitAll()
+            		 .requestMatchers(
+            				 "/",
+                             "/index.html",
+                             "/static/**",
+                             "/assets",
+                             "/js/**",
+                             "/css/**",
+                             "/assets/**",
+                             "/favicon.ico",
+                             "/manifest.json"
+            			    ).permitAll()
+
                 .anyRequest().authenticated()
             );
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
-
+//    @Bean
+//    public WebSecurityCustomizer webSecurityCustomizer() {
+//        return (web) -> web.ignoring().requestMatchers(
+//            "/js/**",
+//            "/css/**",
+//            "/assets/**",
+//            "/index.html",
+//            "/static/**"
+//        );
+//    }
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

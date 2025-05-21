@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 // Logovanje uloga korisnika
-                logger.info("User '{}' has roles: {}", username, userDetails.getAuthorities());
+//                logger.info("User '{}' has roles: {}", username, userDetails.getAuthorities());
             }
         }
 
